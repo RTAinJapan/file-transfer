@@ -168,7 +168,7 @@ var getTwitchTitle = function () { return __awaiter(void 0, void 0, void 0, func
     });
 }); };
 var checkAndMoveFile = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var id, files, fileInfoList, _i, files_1, file, info, isFilenameChange, isUploaded, _a, fileInfoList_1, file, basefile, tofile, twitchText, e_4, lockFile, e_5, nexttitle, e_6, message;
+    var id, files, fileInfoList, _i, files_1, file, info, isFilenameChange, isUploaded, _a, fileInfoList_1, file, basefile, tofile, lockFile, twitchText, e_4, e_5, nexttitle, e_6, message;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -226,6 +226,7 @@ var checkAndMoveFile = function () { return __awaiter(void 0, void 0, void 0, fu
                 file = fileInfoList_1[_a];
                 basefile = file.filePath;
                 tofile = void 0;
+                lockFile = "./data/" + path_1.default.basename(basefile) + ".lock";
                 if (!isFilenameChange) return [3 /*break*/, 14];
                 _b.label = 10;
             case 10:
@@ -248,7 +249,6 @@ var checkAndMoveFile = function () { return __awaiter(void 0, void 0, void 0, fu
                 tofile = path_1.default.basename(basefile);
                 _b.label = 15;
             case 15:
-                lockFile = "./data/" + tofile + ".lock";
                 logger_1.default.system.info("[" + id + "] check lock " + lockFile);
                 return [4 /*yield*/, util_1.isFileExist(lockFile)];
             case 16:

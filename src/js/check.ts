@@ -131,6 +131,7 @@ export const checkAndMoveFile = async () => {
     for (const file of fileInfoList) {
       const basefile = file.filePath;
       let tofile: string;
+      const lockFile: string = `./data/${path.basename(basefile)}.lock`;
       if (isFilenameChange) {
         // Twitchから取得したタイトル
         try {
@@ -145,7 +146,6 @@ export const checkAndMoveFile = async () => {
       } else {
         tofile = path.basename(basefile);
       }
-      const lockFile = `./data/${tofile}.lock`;
       logger.system.info(`[${id}] check lock ${lockFile}`);
       if (await isFileExist(lockFile)) {
         logger.system.info(`[${id}] ${tofile} はアップロード中だった`);

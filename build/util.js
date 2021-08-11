@@ -221,7 +221,7 @@ var s3mv = function (bucket, dir, from, to) { return __awaiter(void 0, void 0, v
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                command = "aws s3 mv \"" + from + "\" \"s3://" + bucket + "/" + dir + "/" + to + "\" --storage-class GLACIER";
+                command = "aws s3 mv \"" + from + "\" \"s3://" + bucket + "/" + dir + "/" + to + "\" --storage-class GLACIER --quiet";
                 logger_1.default.system.info("[s3mv] " + command);
                 return [4 /*yield*/, exports.execCommand(command)];
             case 1:

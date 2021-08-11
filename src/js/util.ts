@@ -156,7 +156,7 @@ export const execCommand = (command: string): Promise<string> => {
  * @param to アップロード先のファイル名
  */
 export const s3mv = async (bucket: string, dir: string, from: string, to: string): Promise<void> => {
-  const command = `aws s3 mv "${from}" "s3://${bucket}/${dir}/${to}" --storage-class GLACIER`;
+  const command = `aws s3 mv "${from}" "s3://${bucket}/${dir}/${to}" --storage-class GLACIER --quiet`;
   logger.system.info(`[s3mv] ${command}`);
   const result = await execCommand(command);
   logger.system.info(result);
