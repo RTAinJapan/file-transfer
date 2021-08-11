@@ -11,6 +11,8 @@ interface Config {
      * @example "C:\\Users\\pasta04\\Desktop\\rec"
      */
     targetDir: string;
+    /** 監視間隔(分) */
+    checkInterval: number;
     /** 拡張子 */
     ext: string;
   };

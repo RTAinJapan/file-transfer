@@ -1,6 +1,6 @@
 import logger from './logger';
 import configModule from 'config';
-import { converDateToStr, execCommand, find, readFileText, s3mv, statFile, writeTextFile } from './util';
+import { converDateToStr, execCommand, find, isFileExist, readFileText, removeFile, s3mv, statFile, writeTextFile } from './util';
 import axios from 'axios';
 import path from 'path';
 
@@ -46,7 +46,7 @@ export const discordWebSocketHeartbeat = () => {
 const getAndWriteTwitchTitle = async () => {
   const title = await getTwitchTitle();
   if (!title) return '';
-  const fixedTitle = title.replace('/', '').replace('|', '').trim();
+  const fixedTitle = title.replace('/', '').replace('|', '').replace('\\', '').replace(':', ' -').trim();
 
   await writeTextFile('./data/twitch.csv', fixedTitle);
   return fixedTitle;
@@ -90,6 +90,8 @@ const getTwitchTitle = async () => {
 };
 
 export const checkAndMoveFile = async () => {
+  const id = `${new Date().getTime()}`;
+
   try {
     const files = await find(`${config.watch.targetDir}\\*${config.watch.ext}`);
     // logger.console.info(files);
@@ -105,7 +107,7 @@ export const checkAndMoveFile = async () => {
     }
 
     if (fileInfoList.length < 2) {
-      logger.console.info('ファイル数が既定数以下なので終了');
+      logger.console.info(`[${id}] ファイル数が既定数以下なので終了`);
       return;
     }
 
@@ -121,10 +123,11 @@ export const checkAndMoveFile = async () => {
       if (a.createDate < b.createDate) return -1;
       return 0;
     });
-    logger.console.info(JSON.stringify(fileInfoList, null, '  '));
+    logger.console.info(`[${id}] ファイル一覧 \n ${JSON.stringify(fileInfoList, null, '  ')}`);
     fileInfoList.pop();
 
     // 残りをS3にアップロード
+    let isUploaded = false;
     for (const file of fileInfoList) {
       const basefile = file.filePath;
       let tofile: string;
@@ -134,7 +137,7 @@ export const checkAndMoveFile = async () => {
           const twitchText = await readFileText('./data/twitch.csv', 'utf-8');
           if (!twitchText) throw '';
           tofile = twitchText + '_' + converDateToStr(new Date()) + config.watch.ext;
-          logger.console.info(tofile);
+          logger.console.info(`[${id}] ${tofile}`);
         } catch (e) {
           // ファイルが無かったり読めなかったり
           tofile = path.basename(basefile);
@@ -142,15 +145,33 @@ export const checkAndMoveFile = async () => {
       } else {
         tofile = path.basename(basefile);
       }
+      const lockFile = `./data/${tofile}.lock`;
+      logger.system.info(`[${id}] check lock ${lockFile}`);
+      if (await isFileExist(lockFile)) {
+        logger.system.info(`[${id}] ${tofile} はアップロード中だった`);
+        continue;
+      }
+      await writeTextFile(lockFile, `${new Date()}`);
+      await sendDiscord(`S3アップロード開始: ${tofile}`);
+      isUploaded = true;
       await s3mv(config.aws.bucket, config.aws.dir, basefile, tofile);
+      try {
+        await removeFile(lockFile);
+      } catch (e) {
+        logger.system.error(`[${id}] 何でか${tofile}を消せなかった`);
+      }
       await sendDiscord(`S3アップロード完了: ${tofile}`);
     }
 
     // Twitchからタイトルを取得してファイルに書き込み
-    const nexttitle = await getAndWriteTwitchTitle();
-    await sendDiscord(`次のアップロード予定タイトルは ${nexttitle}`);
+    if (isUploaded) {
+      const nexttitle = await getAndWriteTwitchTitle();
+      await sendDiscord(`次のアップロード予定タイトルは ${nexttitle}`);
+    } else {
+      logger.system.info(`[${id}] このチェックではアップロード対象無し`);
+    }
   } catch (e) {
-    const message = `[ERROR] ${JSON.stringify(e, null, '  ')}`;
+    const message = `[${id}] [ERROR] ${JSON.stringify(e, null, '  ')}`;
     logger.system.error(message);
     sendDiscord(message);
   }

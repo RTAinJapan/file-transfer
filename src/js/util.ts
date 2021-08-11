@@ -20,6 +20,19 @@ export const converDateToStr = (date: Date): string => {
 };
 
 /**
+ * awaitで囲いたいfs.exists
+ * @param fullPath ファイルの絶対パス
+ * @return true:存在する false:しない
+ */
+export const isFileExist = (fullPath: string): Promise<boolean> => {
+  return new Promise((resolve, reject) => {
+    fs.exists(fullPath, (exists: boolean) => {
+      resolve(exists);
+    });
+  });
+};
+
+/**
  * awaitで囲いたいreadFile
  * @param filePath ファイルのパス
  * @param code 文字コード
@@ -30,6 +43,20 @@ export const readFileText = (filePath: string, code: string): Promise<string> =>
     fs.readFile(filePath, code, (err, data) => {
       if (err) reject(err);
       resolve(data);
+    });
+  });
+};
+
+/**
+ * awaitで囲いたいremove
+ * @param src 削除対象のファイルのパス
+ * @throws 削除で何かあった
+ */
+export const removeFile = (src: string): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    fs.remove(src, (err) => {
+      if (err) reject();
+      resolve();
     });
   });
 };

@@ -1,4 +1,6 @@
 import { checkAndMoveFile, checkEnv, discordWebSocketHeartbeat } from './check';
+import configModule from 'config';
+const config: Config = configModule.util.toObject(configModule);
 
 // 環境チェック
 checkEnv().then(() => {
@@ -8,7 +10,7 @@ checkEnv().then(() => {
   // 定期チェック
   setInterval(() => {
     checkAndMoveFile();
-  }, 5 * 60 * 1000);
+  }, config.watch.checkInterval * 60 * 1000);
 
   // 生存チェック
   setInterval(() => {

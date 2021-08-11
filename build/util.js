@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.s3mv = exports.execCommand = exports.sleep = exports.retry = exports.find = exports.statFile = exports.writeTextFile = exports.readFileText = exports.converDateToStr = void 0;
+exports.s3mv = exports.execCommand = exports.sleep = exports.retry = exports.find = exports.statFile = exports.writeTextFile = exports.removeFile = exports.readFileText = exports.isFileExist = exports.converDateToStr = void 0;
 var fs_extra_1 = __importDefault(require("fs-extra"));
 var logger_1 = __importDefault(require("./logger"));
 var glob_1 = __importDefault(require("glob"));
@@ -61,6 +61,19 @@ var converDateToStr = function (date) {
 };
 exports.converDateToStr = converDateToStr;
 /**
+ * awaitで囲いたいfs.exists
+ * @param fullPath ファイルの絶対パス
+ * @return true:存在する false:しない
+ */
+var isFileExist = function (fullPath) {
+    return new Promise(function (resolve, reject) {
+        fs_extra_1.default.exists(fullPath, function (exists) {
+            resolve(exists);
+        });
+    });
+};
+exports.isFileExist = isFileExist;
+/**
  * awaitで囲いたいreadFile
  * @param filePath ファイルのパス
  * @param code 文字コード
@@ -76,6 +89,21 @@ var readFileText = function (filePath, code) {
     });
 };
 exports.readFileText = readFileText;
+/**
+ * awaitで囲いたいremove
+ * @param src 削除対象のファイルのパス
+ * @throws 削除で何かあった
+ */
+var removeFile = function (src) {
+    return new Promise(function (resolve, reject) {
+        fs_extra_1.default.remove(src, function (err) {
+            if (err)
+                reject();
+            resolve();
+        });
+    });
+};
+exports.removeFile = removeFile;
 /**
  * テキストファイルに上書き保存
  * @param filepath ファイルパス

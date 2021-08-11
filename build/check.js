@@ -116,7 +116,7 @@ var getAndWriteTwitchTitle = function () { return __awaiter(void 0, void 0, void
                 title = _a.sent();
                 if (!title)
                     return [2 /*return*/, ''];
-                fixedTitle = title.replace('/', '').replace('|', '').trim();
+                fixedTitle = title.replace('/', '').replace('|', '').replace('\\', '').replace(':', ' -').trim();
                 return [4 /*yield*/, util_1.writeTextFile('./data/twitch.csv', fixedTitle)];
             case 2:
                 _a.sent();
@@ -168,43 +168,46 @@ var getTwitchTitle = function () { return __awaiter(void 0, void 0, void 0, func
     });
 }); };
 var checkAndMoveFile = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var files, fileInfoList, _i, files_1, file, info, isFilenameChange, _a, fileInfoList_1, file, basefile, tofile, twitchText, e_4, nexttitle, e_5, message;
+    var id, files, fileInfoList, _i, files_1, file, info, isFilenameChange, isUploaded, _a, fileInfoList_1, file, basefile, tofile, twitchText, e_4, lockFile, e_5, nexttitle, e_6, message;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _b.trys.push([0, 21, , 22]);
-                return [4 /*yield*/, util_1.find(config.watch.targetDir + "\\*" + config.watch.ext)];
+                id = "" + new Date().getTime();
+                _b.label = 1;
             case 1:
+                _b.trys.push([1, 31, , 32]);
+                return [4 /*yield*/, util_1.find(config.watch.targetDir + "\\*" + config.watch.ext)];
+            case 2:
                 files = _b.sent();
                 fileInfoList = [];
                 _i = 0, files_1 = files;
-                _b.label = 2;
-            case 2:
-                if (!(_i < files_1.length)) return [3 /*break*/, 5];
+                _b.label = 3;
+            case 3:
+                if (!(_i < files_1.length)) return [3 /*break*/, 6];
                 file = files_1[_i];
                 return [4 /*yield*/, util_1.statFile(file)];
-            case 3:
+            case 4:
                 info = _b.sent();
                 fileInfoList.push({
                     filePath: file,
                     createDate: info.birthtime,
                 });
-                _b.label = 4;
-            case 4:
-                _i++;
-                return [3 /*break*/, 2];
+                _b.label = 5;
             case 5:
+                _i++;
+                return [3 /*break*/, 3];
+            case 6:
                 if (fileInfoList.length < 2) {
-                    logger_1.default.console.info('ファイル数が既定数以下なので終了');
+                    logger_1.default.console.info("[" + id + "] \u30D5\u30A1\u30A4\u30EB\u6570\u304C\u65E2\u5B9A\u6570\u4EE5\u4E0B\u306A\u306E\u3067\u7D42\u4E86");
                     return [2 /*return*/];
                 }
                 isFilenameChange = fileInfoList.length === 2;
-                if (!!isFilenameChange) return [3 /*break*/, 7];
+                if (!!isFilenameChange) return [3 /*break*/, 8];
                 return [4 /*yield*/, sendDiscord('何らかの理由でファイルが3つ以上あるため、ファイル名変換は行わずにアップロードします')];
-            case 6:
-                _b.sent();
-                _b.label = 7;
             case 7:
+                _b.sent();
+                _b.label = 8;
+            case 8:
                 // ソートして一番新しいものを除外
                 fileInfoList = fileInfoList.sort(function (a, b) {
                     if (a.createDate > b.createDate)
@@ -213,60 +216,94 @@ var checkAndMoveFile = function () { return __awaiter(void 0, void 0, void 0, fu
                         return -1;
                     return 0;
                 });
-                logger_1.default.console.info(JSON.stringify(fileInfoList, null, '  '));
+                logger_1.default.console.info("[" + id + "] \u30D5\u30A1\u30A4\u30EB\u4E00\u89A7 \n " + JSON.stringify(fileInfoList, null, '  '));
                 fileInfoList.pop();
+                isUploaded = false;
                 _a = 0, fileInfoList_1 = fileInfoList;
-                _b.label = 8;
-            case 8:
-                if (!(_a < fileInfoList_1.length)) return [3 /*break*/, 18];
+                _b.label = 9;
+            case 9:
+                if (!(_a < fileInfoList_1.length)) return [3 /*break*/, 26];
                 file = fileInfoList_1[_a];
                 basefile = file.filePath;
                 tofile = void 0;
-                if (!isFilenameChange) return [3 /*break*/, 13];
-                _b.label = 9;
-            case 9:
-                _b.trys.push([9, 11, , 12]);
-                return [4 /*yield*/, util_1.readFileText('./data/twitch.csv', 'utf-8')];
+                if (!isFilenameChange) return [3 /*break*/, 14];
+                _b.label = 10;
             case 10:
+                _b.trys.push([10, 12, , 13]);
+                return [4 /*yield*/, util_1.readFileText('./data/twitch.csv', 'utf-8')];
+            case 11:
                 twitchText = _b.sent();
                 if (!twitchText)
                     throw '';
                 tofile = twitchText + '_' + util_1.converDateToStr(new Date()) + config.watch.ext;
-                logger_1.default.console.info(tofile);
-                return [3 /*break*/, 12];
-            case 11:
+                logger_1.default.console.info("[" + id + "] " + tofile);
+                return [3 /*break*/, 13];
+            case 12:
                 e_4 = _b.sent();
                 // ファイルが無かったり読めなかったり
                 tofile = path_1.default.basename(basefile);
-                return [3 /*break*/, 12];
-            case 12: return [3 /*break*/, 14];
-            case 13:
+                return [3 /*break*/, 13];
+            case 13: return [3 /*break*/, 15];
+            case 14:
                 tofile = path_1.default.basename(basefile);
-                _b.label = 14;
-            case 14: return [4 /*yield*/, util_1.s3mv(config.aws.bucket, config.aws.dir, basefile, tofile)];
+                _b.label = 15;
             case 15:
-                _b.sent();
-                return [4 /*yield*/, sendDiscord("S3\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u5B8C\u4E86: " + tofile)];
+                lockFile = "./data/" + tofile + ".lock";
+                logger_1.default.system.info("[" + id + "] check lock " + lockFile);
+                return [4 /*yield*/, util_1.isFileExist(lockFile)];
             case 16:
-                _b.sent();
-                _b.label = 17;
+                if (_b.sent()) {
+                    logger_1.default.system.info("[" + id + "] " + tofile + " \u306F\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u4E2D\u3060\u3063\u305F");
+                    return [3 /*break*/, 25];
+                }
+                return [4 /*yield*/, util_1.writeTextFile(lockFile, "" + new Date())];
             case 17:
-                _a++;
-                return [3 /*break*/, 8];
-            case 18: return [4 /*yield*/, getAndWriteTwitchTitle()];
+                _b.sent();
+                return [4 /*yield*/, sendDiscord("S3\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u958B\u59CB: " + tofile)];
+            case 18:
+                _b.sent();
+                isUploaded = true;
+                return [4 /*yield*/, util_1.s3mv(config.aws.bucket, config.aws.dir, basefile, tofile)];
             case 19:
+                _b.sent();
+                _b.label = 20;
+            case 20:
+                _b.trys.push([20, 22, , 23]);
+                return [4 /*yield*/, util_1.removeFile(lockFile)];
+            case 21:
+                _b.sent();
+                return [3 /*break*/, 23];
+            case 22:
+                e_5 = _b.sent();
+                logger_1.default.system.error("[" + id + "] \u4F55\u3067\u304B" + tofile + "\u3092\u6D88\u305B\u306A\u304B\u3063\u305F");
+                return [3 /*break*/, 23];
+            case 23: return [4 /*yield*/, sendDiscord("S3\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u5B8C\u4E86: " + tofile)];
+            case 24:
+                _b.sent();
+                _b.label = 25;
+            case 25:
+                _a++;
+                return [3 /*break*/, 9];
+            case 26:
+                if (!isUploaded) return [3 /*break*/, 29];
+                return [4 /*yield*/, getAndWriteTwitchTitle()];
+            case 27:
                 nexttitle = _b.sent();
                 return [4 /*yield*/, sendDiscord("\u6B21\u306E\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u4E88\u5B9A\u30BF\u30A4\u30C8\u30EB\u306F " + nexttitle)];
-            case 20:
+            case 28:
                 _b.sent();
-                return [3 /*break*/, 22];
-            case 21:
-                e_5 = _b.sent();
-                message = "[ERROR] " + JSON.stringify(e_5, null, '  ');
+                return [3 /*break*/, 30];
+            case 29:
+                logger_1.default.system.info("[" + id + "] \u3053\u306E\u30C1\u30A7\u30C3\u30AF\u3067\u306F\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u5BFE\u8C61\u7121\u3057");
+                _b.label = 30;
+            case 30: return [3 /*break*/, 32];
+            case 31:
+                e_6 = _b.sent();
+                message = "[" + id + "] [ERROR] " + JSON.stringify(e_6, null, '  ');
                 logger_1.default.system.error(message);
                 sendDiscord(message);
-                return [3 /*break*/, 22];
-            case 22: return [2 /*return*/];
+                return [3 /*break*/, 32];
+            case 32: return [2 /*return*/];
         }
     });
 }); };
