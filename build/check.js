@@ -51,7 +51,7 @@ var checkEnv = function () { return __awaiter(void 0, void 0, void 0, function (
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 3, , 4]);
+                _a.trys.push([0, 3, , 5]);
                 // AWS CLIでS3のチェック
                 logger_1.default.system.info('[checkEnv] AWS S3');
                 return [4 /*yield*/, util_1.execCommand("aws s3 ls s3://" + config.aws.bucket + "/" + config.aws.dir + "/")];
@@ -68,12 +68,15 @@ var checkEnv = function () { return __awaiter(void 0, void 0, void 0, function (
                 logger_1.default.system.info('[checkEnv] Discord WebHook');
                 ret = exports.discordWebSocketHeartbeat();
                 logger_1.default.system.info(JSON.stringify(ret));
-                return [3 /*break*/, 4];
+                return [3 /*break*/, 5];
             case 3:
                 e_1 = _a.sent();
                 logger_1.default.system.error(JSON.stringify(e_1));
-                return [3 /*break*/, 4];
-            case 4: return [2 /*return*/];
+                return [4 /*yield*/, sendDiscord('[ERROR] 起動時確認で死んだ')];
+            case 4:
+                _a.sent();
+                throw new Error('');
+            case 5: return [2 /*return*/];
         }
     });
 }); };
@@ -263,7 +266,7 @@ var checkAndMoveFile = function () { return __awaiter(void 0, void 0, void 0, fu
             case 18:
                 _b.sent();
                 isUploaded = true;
-                return [4 /*yield*/, util_1.s3mv(config.aws.bucket, config.aws.dir, basefile, tofile)];
+                return [4 /*yield*/, util_1.s3mv(config.aws.bucket, config.aws.dir, basefile, tofile, config.aws.storageClass)];
             case 19:
                 _b.sent();
                 _b.label = 20;

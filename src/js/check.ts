@@ -24,6 +24,8 @@ export const checkEnv = async () => {
     logger.system.info(JSON.stringify(ret));
   } catch (e) {
     logger.system.error(JSON.stringify(e));
+    await sendDiscord('[ERROR] 起動時確認で死んだ');
+    throw new Error('');
   }
 };
 
@@ -154,7 +156,7 @@ export const checkAndMoveFile = async () => {
       await writeTextFile(lockFile, `${new Date()}`);
       await sendDiscord(`S3アップロード開始: ${tofile}`);
       isUploaded = true;
-      await s3mv(config.aws.bucket, config.aws.dir, basefile, tofile);
+      await s3mv(config.aws.bucket, config.aws.dir, basefile, tofile, config.aws.storageClass);
       try {
         await removeFile(lockFile);
       } catch (e) {

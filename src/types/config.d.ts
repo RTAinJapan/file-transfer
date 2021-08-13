@@ -24,6 +24,8 @@ interface Config {
      * @example 2021-summer
      */
     dir: string;
+    /** ストレージクラス */
+    storageClass: string;
   };
   twitch: {
     ClientId: string;

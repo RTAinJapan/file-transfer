@@ -155,8 +155,9 @@ export const execCommand = (command: string): Promise<string> => {
  * @param from アップロード元のファイルのフルパス
  * @param to アップロード先のファイル名
  */
-export const s3mv = async (bucket: string, dir: string, from: string, to: string): Promise<void> => {
-  const command = `aws s3 mv "${from}" "s3://${bucket}/${dir}/${to}" --storage-class GLACIER --quiet`;
+export const s3mv = async (bucket: string, dir: string, from: string, to: string, storageClass: string): Promise<void> => {
+  const storageClass2 = storageClass ? storageClass : 'STANDARD';
+  const command = `aws s3 mv "${from}" "s3://${bucket}/${dir}/${to}" --storage-class ${storageClass2} --quiet`;
   logger.system.info(`[s3mv] ${command}`);
   const result = await execCommand(command);
   logger.system.info(result);
