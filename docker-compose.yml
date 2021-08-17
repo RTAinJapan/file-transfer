@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   file-transfer:
-    image: file-transfer
+    image: pasta04/file-transfer
     volumes:
       - /c/opt/app/rec:/usr/src/app/rec
       - /c/opt/app/log:/usr/src/app/log
