@@ -2,7 +2,9 @@
   "name": "mirror-in",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "build/index.js",
+  "license": "Apache-2.0",
+  "private": true,
   "dependencies": {
     "axios": "^0.21.1",
     "config": "^3.3.6",
@@ -19,6 +21,8 @@
     "@types/fs-extra": "^9.0.12",
     "@types/glob": "^7.1.4",
     "@types/node": "^16.4.13",
+    "@typescript-eslint/eslint-plugin": "^4.29.2",
+    "@typescript-eslint/parser": "^4.29.2",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
@@ -30,6 +34,9 @@
     "install-service": "winser -i -a",
     "uninstall-service": "winser -r -x",
     "build": "tsc",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "lint": "eslint src/**/*.ts",
+    "docker:build": "docker build . -t file-transfer",
+    "docker:start": "docker-cimpose up -d"
   }
 }

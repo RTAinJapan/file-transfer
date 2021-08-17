@@ -1,3 +1,6 @@
+# Node.jsの各バージョンでのビルド確認
+# 何かしたら実行
+
 name: Node CI
 
 on: [push, pull_request]
@@ -7,10 +10,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node-version: [12.x, 13.x, 14.x]
+        node-version: [12.x, 14.x]
         os: [windows-latest, macOS-latest, ubuntu-latest]
       fail-fast: false
     steps:
+      # actions/checkoutが勝手に改行コードを変えないようにする
+      - name: Set git to use LF
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
@@ -18,7 +26,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Install
         run: yarn --frozen-lockfile
-      # - name: Test
-      #   run: yarn test
+      - name: Lint
+        run: yarn lint
       - name: Build
         run: yarn build

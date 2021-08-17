@@ -9,22 +9,30 @@ const config: Config = configModule.util.toObject(configModule);
 export const checkEnv = async () => {
   try {
     // AWS CLIでS3のチェック
-    logger.system.info('[checkEnv] AWS S3');
-    let ret: any = await execCommand(`aws s3 ls s3://${config.aws.bucket}/${config.aws.dir}/`);
-    logger.system.info(ret);
+    const s3path = `s3://${config.aws.bucket}/${config.aws.dir}/`;
+    logger.info(`[checkEnv] AWS S3=${s3path}`);
+    let ret: any = await execCommand(`aws s3 ls ${s3path}`);
+    logger.info(ret);
 
     // 監視対象のチェック
-    logger.system.info('[checkEnv] 監視対象のディレクトリ');
-    ret = await execCommand(`cd ${config.watch.targetDir} & dir /B`);
-    logger.system.info(ret);
+    logger.info(`[checkEnv] 監視対象のディレクトリの存在チェック dir=${config.watch.targetDir}`);
+    ret = await isFileExist(config.watch.targetDir);
+    logger.info(ret);
+
+    logger.info(`[checkEnv] 現在の監視対象ファイル`);
+    ret = await find(`${config.watch.targetDir}/*${config.watch.ext}`);
+    logger.info(JSON.stringify(ret));
 
     // WebHookのチェック
-    logger.system.info('[checkEnv] Discord WebHook');
-    ret = discordWebSocketHeartbeat();
-    logger.system.info(JSON.stringify(ret));
+    if (config.discord.webhook) {
+      logger.info('[checkEnv] exec Discord WebHook');
+      await discordWebSocketHeartbeat();
+    } else {
+      logger.info('[checkEnv] Discord WebHook無し');
+    }
   } catch (e) {
-    logger.system.error(JSON.stringify(e));
-    await sendDiscord('[ERROR] 起動時確認で死んだ');
+    logger.error(JSON.stringify(e));
+    await sendDiscord('[checkEnv][ERROR] 起動時確認で死んだ');
     throw new Error('');
   }
 };
@@ -37,7 +45,7 @@ const sendDiscord = async (message: string): Promise<void> => {
       content: message,
     });
   } catch (e) {
-    logger.system.error(e);
+    logger.error(e);
   }
 };
 
@@ -95,8 +103,7 @@ export const checkAndMoveFile = async () => {
   const id = `${new Date().getTime()}`;
 
   try {
-    const files = await find(`${config.watch.targetDir}\\*${config.watch.ext}`);
-    // logger.console.info(files);
+    const files = await find(`${config.watch.targetDir}/*${config.watch.ext}`);
 
     // ファイル情報を取得
     let fileInfoList: { filePath: string; createDate: Date }[] = [];
@@ -109,7 +116,7 @@ export const checkAndMoveFile = async () => {
     }
 
     if (fileInfoList.length < 2) {
-      logger.console.info(`[${id}] ファイル数が既定数以下なので終了`);
+      logger.info(`[${id}] ファイル数が既定数以下なので終了`);
       return;
     }
 
@@ -125,7 +132,7 @@ export const checkAndMoveFile = async () => {
       if (a.createDate < b.createDate) return -1;
       return 0;
     });
-    logger.console.info(`[${id}] ファイル一覧 \n ${JSON.stringify(fileInfoList, null, '  ')}`);
+    logger.info(`[${id}] ファイル一覧 \n ${JSON.stringify(fileInfoList, null, '  ')}`);
     fileInfoList.pop();
 
     // 残りをS3にアップロード
@@ -133,14 +140,14 @@ export const checkAndMoveFile = async () => {
     for (const file of fileInfoList) {
       const basefile = file.filePath;
       let tofile: string;
-      const lockFile: string = `./data/${path.basename(basefile)}.lock`;
+      const lockFile = `./data/${path.basename(basefile)}.lock`;
       if (isFilenameChange) {
         // Twitchから取得したタイトル
         try {
           const twitchText = await readFileText('./data/twitch.csv', 'utf-8');
           if (!twitchText) throw '';
           tofile = twitchText + '_' + converDateToStr(new Date()) + config.watch.ext;
-          logger.console.info(`[${id}] ${tofile}`);
+          logger.info(`[${id}] ${tofile}`);
         } catch (e) {
           // ファイルが無かったり読めなかったり
           tofile = path.basename(basefile);
@@ -148,9 +155,9 @@ export const checkAndMoveFile = async () => {
       } else {
         tofile = path.basename(basefile);
       }
-      logger.system.info(`[${id}] check lock ${lockFile}`);
+      logger.info(`[${id}] check lock ${lockFile}`);
       if (await isFileExist(lockFile)) {
-        logger.system.info(`[${id}] ${tofile} はアップロード中だった`);
+        logger.info(`[${id}] ${tofile} はアップロード中だった`);
         continue;
       }
       await writeTextFile(lockFile, `${new Date()}`);
@@ -160,7 +167,7 @@ export const checkAndMoveFile = async () => {
       try {
         await removeFile(lockFile);
       } catch (e) {
-        logger.system.error(`[${id}] 何でか${tofile}を消せなかった`);
+        logger.error(`[${id}] 何でか${tofile}を消せなかった`);
       }
       await sendDiscord(`S3アップロード完了: ${tofile}`);
     }
@@ -170,11 +177,11 @@ export const checkAndMoveFile = async () => {
       const nexttitle = await getAndWriteTwitchTitle();
       await sendDiscord(`次のアップロード予定タイトルは ${nexttitle}`);
     } else {
-      logger.system.info(`[${id}] このチェックではアップロード対象無し`);
+      logger.info(`[${id}] このチェックではアップロード対象無し`);
     }
   } catch (e) {
     const message = `[${id}] [ERROR] ${JSON.stringify(e, null, '  ')}`;
-    logger.system.error(message);
+    logger.error(message);
     sendDiscord(message);
   }
 };

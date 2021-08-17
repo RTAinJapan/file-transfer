@@ -61,6 +61,7 @@ typings/
 # next.js build output
 .next
 
-config/*.json
+config/development.json
+config/production.json
 
 *.csv

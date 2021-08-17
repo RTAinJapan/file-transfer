@@ -1,0 +1,46 @@
+{
+  "discord": {
+    "webhook": ""
+  },
+  "watch": {
+    "targetDir": "",
+    "checkInterval": 5,
+    "ext": ".mkv"
+  },
+  "aws": {
+    "bucket": "",
+    "dir": "",
+    "storageClass": "STANDARD"
+  },
+  "twitch": {
+    "ClientId": ""
+  },
+  "log4js": {
+    "appenders": {
+      "file": {
+        "type": "file",
+        "filename": "./log/app.log",
+        "maxLogSize": 10485760,
+        "backups": 1,
+        "layout": {
+          "type": "pattern",
+          "pattern": "[%d] [%p] %f{1}:%l %m"
+        }
+      },
+      "console": {
+        "type": "console",
+        "layout": {
+          "type": "pattern",
+          "pattern": "[%d] [%p] %m"
+        }
+      }
+    },
+    "categories": {
+      "default": {
+        "appenders": ["console", "file"],
+        "level": "info",
+        "enableCallStack": true
+      }
+    }
+  }
+}

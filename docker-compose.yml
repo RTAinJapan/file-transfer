@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  file-transfer:
+    image: file-transfer
+    volumes:
+      - /c/opt/app/rec:/usr/src/app/rec
+      - /c/opt/app/log:/usr/src/app/log
+      - /c/opt/app/config:/usr/src/app/config
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-ap-northeast-1}
+      - AWS_DEFAULT_OUTPUT=${AWS_DEFAULT_OUTPUT:-json}

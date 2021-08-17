@@ -47,36 +47,46 @@ var axios_1 = __importDefault(require("axios"));
 var path_1 = __importDefault(require("path"));
 var config = config_1.default.util.toObject(config_1.default);
 var checkEnv = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var ret, e_1;
+    var s3path, ret, e_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 3, , 5]);
-                // AWS CLIでS3のチェック
-                logger_1.default.system.info('[checkEnv] AWS S3');
-                return [4 /*yield*/, util_1.execCommand("aws s3 ls s3://" + config.aws.bucket + "/" + config.aws.dir + "/")];
+                _a.trys.push([0, 7, , 9]);
+                s3path = "s3://" + config.aws.bucket + "/" + config.aws.dir + "/";
+                logger_1.default.info("[checkEnv] AWS S3=" + s3path);
+                return [4 /*yield*/, util_1.execCommand("aws s3 ls " + s3path)];
             case 1:
                 ret = _a.sent();
-                logger_1.default.system.info(ret);
+                logger_1.default.info(ret);
                 // 監視対象のチェック
-                logger_1.default.system.info('[checkEnv] 監視対象のディレクトリ');
-                return [4 /*yield*/, util_1.execCommand("cd " + config.watch.targetDir + " & dir /B")];
+                logger_1.default.info("[checkEnv] \u76E3\u8996\u5BFE\u8C61\u306E\u30C7\u30A3\u30EC\u30AF\u30C8\u30EA\u306E\u5B58\u5728\u30C1\u30A7\u30C3\u30AF dir=" + config.watch.targetDir);
+                return [4 /*yield*/, util_1.isFileExist(config.watch.targetDir)];
             case 2:
                 ret = _a.sent();
-                logger_1.default.system.info(ret);
-                // WebHookのチェック
-                logger_1.default.system.info('[checkEnv] Discord WebHook');
-                ret = exports.discordWebSocketHeartbeat();
-                logger_1.default.system.info(JSON.stringify(ret));
-                return [3 /*break*/, 5];
+                logger_1.default.info(ret);
+                logger_1.default.info("[checkEnv] \u73FE\u5728\u306E\u76E3\u8996\u5BFE\u8C61\u30D5\u30A1\u30A4\u30EB");
+                return [4 /*yield*/, util_1.find(config.watch.targetDir + "/*" + config.watch.ext)];
             case 3:
-                e_1 = _a.sent();
-                logger_1.default.system.error(JSON.stringify(e_1));
-                return [4 /*yield*/, sendDiscord('[ERROR] 起動時確認で死んだ')];
+                ret = _a.sent();
+                logger_1.default.info(JSON.stringify(ret));
+                if (!config.discord.webhook) return [3 /*break*/, 5];
+                logger_1.default.info('[checkEnv] exec Discord WebHook');
+                return [4 /*yield*/, exports.discordWebSocketHeartbeat()];
             case 4:
                 _a.sent();
+                return [3 /*break*/, 6];
+            case 5:
+                logger_1.default.info('[checkEnv] Discord WebHook無し');
+                _a.label = 6;
+            case 6: return [3 /*break*/, 9];
+            case 7:
+                e_1 = _a.sent();
+                logger_1.default.error(JSON.stringify(e_1));
+                return [4 /*yield*/, sendDiscord('[checkEnv][ERROR] 起動時確認で死んだ')];
+            case 8:
+                _a.sent();
                 throw new Error('');
-            case 5: return [2 /*return*/];
+            case 9: return [2 /*return*/];
         }
     });
 }); };
@@ -100,7 +110,7 @@ var sendDiscord = function (message) { return __awaiter(void 0, void 0, void 0, 
                 return [3 /*break*/, 4];
             case 3:
                 e_2 = _a.sent();
-                logger_1.default.system.error(e_2);
+                logger_1.default.error(e_2);
                 return [3 /*break*/, 4];
             case 4: return [2 /*return*/];
         }
@@ -179,7 +189,7 @@ var checkAndMoveFile = function () { return __awaiter(void 0, void 0, void 0, fu
                 _b.label = 1;
             case 1:
                 _b.trys.push([1, 31, , 32]);
-                return [4 /*yield*/, util_1.find(config.watch.targetDir + "\\*" + config.watch.ext)];
+                return [4 /*yield*/, util_1.find(config.watch.targetDir + "/*" + config.watch.ext)];
             case 2:
                 files = _b.sent();
                 fileInfoList = [];
@@ -201,7 +211,7 @@ var checkAndMoveFile = function () { return __awaiter(void 0, void 0, void 0, fu
                 return [3 /*break*/, 3];
             case 6:
                 if (fileInfoList.length < 2) {
-                    logger_1.default.console.info("[" + id + "] \u30D5\u30A1\u30A4\u30EB\u6570\u304C\u65E2\u5B9A\u6570\u4EE5\u4E0B\u306A\u306E\u3067\u7D42\u4E86");
+                    logger_1.default.info("[" + id + "] \u30D5\u30A1\u30A4\u30EB\u6570\u304C\u65E2\u5B9A\u6570\u4EE5\u4E0B\u306A\u306E\u3067\u7D42\u4E86");
                     return [2 /*return*/];
                 }
                 isFilenameChange = fileInfoList.length === 2;
@@ -219,7 +229,7 @@ var checkAndMoveFile = function () { return __awaiter(void 0, void 0, void 0, fu
                         return -1;
                     return 0;
                 });
-                logger_1.default.console.info("[" + id + "] \u30D5\u30A1\u30A4\u30EB\u4E00\u89A7 \n " + JSON.stringify(fileInfoList, null, '  '));
+                logger_1.default.info("[" + id + "] \u30D5\u30A1\u30A4\u30EB\u4E00\u89A7 \n " + JSON.stringify(fileInfoList, null, '  '));
                 fileInfoList.pop();
                 isUploaded = false;
                 _a = 0, fileInfoList_1 = fileInfoList;
@@ -240,7 +250,7 @@ var checkAndMoveFile = function () { return __awaiter(void 0, void 0, void 0, fu
                 if (!twitchText)
                     throw '';
                 tofile = twitchText + '_' + util_1.converDateToStr(new Date()) + config.watch.ext;
-                logger_1.default.console.info("[" + id + "] " + tofile);
+                logger_1.default.info("[" + id + "] " + tofile);
                 return [3 /*break*/, 13];
             case 12:
                 e_4 = _b.sent();
@@ -252,11 +262,11 @@ var checkAndMoveFile = function () { return __awaiter(void 0, void 0, void 0, fu
                 tofile = path_1.default.basename(basefile);
                 _b.label = 15;
             case 15:
-                logger_1.default.system.info("[" + id + "] check lock " + lockFile);
+                logger_1.default.info("[" + id + "] check lock " + lockFile);
                 return [4 /*yield*/, util_1.isFileExist(lockFile)];
             case 16:
                 if (_b.sent()) {
-                    logger_1.default.system.info("[" + id + "] " + tofile + " \u306F\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u4E2D\u3060\u3063\u305F");
+                    logger_1.default.info("[" + id + "] " + tofile + " \u306F\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u4E2D\u3060\u3063\u305F");
                     return [3 /*break*/, 25];
                 }
                 return [4 /*yield*/, util_1.writeTextFile(lockFile, "" + new Date())];
@@ -278,7 +288,7 @@ var checkAndMoveFile = function () { return __awaiter(void 0, void 0, void 0, fu
                 return [3 /*break*/, 23];
             case 22:
                 e_5 = _b.sent();
-                logger_1.default.system.error("[" + id + "] \u4F55\u3067\u304B" + tofile + "\u3092\u6D88\u305B\u306A\u304B\u3063\u305F");
+                logger_1.default.error("[" + id + "] \u4F55\u3067\u304B" + tofile + "\u3092\u6D88\u305B\u306A\u304B\u3063\u305F");
                 return [3 /*break*/, 23];
             case 23: return [4 /*yield*/, sendDiscord("S3\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u5B8C\u4E86: " + tofile)];
             case 24:
@@ -297,13 +307,13 @@ var checkAndMoveFile = function () { return __awaiter(void 0, void 0, void 0, fu
                 _b.sent();
                 return [3 /*break*/, 30];
             case 29:
-                logger_1.default.system.info("[" + id + "] \u3053\u306E\u30C1\u30A7\u30C3\u30AF\u3067\u306F\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u5BFE\u8C61\u7121\u3057");
+                logger_1.default.info("[" + id + "] \u3053\u306E\u30C1\u30A7\u30C3\u30AF\u3067\u306F\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u5BFE\u8C61\u7121\u3057");
                 _b.label = 30;
             case 30: return [3 /*break*/, 32];
             case 31:
                 e_6 = _b.sent();
                 message = "[" + id + "] [ERROR] " + JSON.stringify(e_6, null, '  ');
-                logger_1.default.system.error(message);
+                logger_1.default.error(message);
                 sendDiscord(message);
                 return [3 /*break*/, 32];
             case 32: return [2 /*return*/];

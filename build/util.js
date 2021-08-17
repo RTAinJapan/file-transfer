@@ -187,7 +187,7 @@ exports.retry = retry;
 var sleep = function (msec) { return new Promise(function (resolve) { return setTimeout(resolve, msec); }); };
 exports.sleep = sleep;
 var execCommand = function (command) {
-    logger_1.default.console.debug("[execCommand] " + command);
+    logger_1.default.debug("[execCommand] " + command);
     return new Promise(function (resolve, reject) {
         child_process_1.exec(command, { encoding: 'buffer', maxBuffer: 1024 * 5000 }, function (error, stdout, strerr) {
             var toString = function (bytes) {
@@ -198,10 +198,10 @@ var execCommand = function (command) {
                 });
             };
             if (error) {
-                logger_1.default.system.error("[execCommand] error " + JSON.stringify(error));
+                logger_1.default.error("[execCommand] error " + JSON.stringify(error));
             }
             if (error || toString(strerr)) {
-                logger_1.default.console.error("[execCommand] strerr");
+                logger_1.default.error("[execCommand] strerr");
                 reject(toString(strerr));
             }
             resolve(toString(stdout));
@@ -223,11 +223,11 @@ var s3mv = function (bucket, dir, from, to, storageClass) { return __awaiter(voi
             case 0:
                 storageClass2 = storageClass ? storageClass : 'STANDARD';
                 command = "aws s3 mv \"" + from + "\" \"s3://" + bucket + "/" + dir + "/" + to + "\" --storage-class " + storageClass2 + " --quiet";
-                logger_1.default.system.info("[s3mv] " + command);
+                logger_1.default.info("[s3mv] " + command);
                 return [4 /*yield*/, exports.execCommand(command)];
             case 1:
                 result = _a.sent();
-                logger_1.default.system.info(result);
+                logger_1.default.info(result);
                 return [2 /*return*/];
         }
     });

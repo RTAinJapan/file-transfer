@@ -120,10 +120,10 @@ export const retry = async <T>(func: any): Promise<T> => {
  * スリーブ
  * @param msec スリーブするミリ秒
  */
-export const sleep = (msec: number) => new Promise((resolve) => setTimeout(resolve, msec));
+export const sleep = (msec: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, msec));
 
 export const execCommand = (command: string): Promise<string> => {
-  logger.console.debug(`[execCommand] ${command}`);
+  logger.debug(`[execCommand] ${command}`);
   return new Promise((resolve, reject) => {
     exec(command, { encoding: 'buffer', maxBuffer: 1024 * 5000 }, (error, stdout, strerr) => {
       const toString = (bytes: Buffer) => {
@@ -135,11 +135,11 @@ export const execCommand = (command: string): Promise<string> => {
       };
 
       if (error) {
-        logger.system.error(`[execCommand] error ${JSON.stringify(error)}`);
+        logger.error(`[execCommand] error ${JSON.stringify(error)}`);
       }
 
       if (error || toString(strerr)) {
-        logger.console.error(`[execCommand] strerr`);
+        logger.error(`[execCommand] strerr`);
         reject(toString(strerr));
       }
 
@@ -158,7 +158,7 @@ export const execCommand = (command: string): Promise<string> => {
 export const s3mv = async (bucket: string, dir: string, from: string, to: string, storageClass: string): Promise<void> => {
   const storageClass2 = storageClass ? storageClass : 'STANDARD';
   const command = `aws s3 mv "${from}" "s3://${bucket}/${dir}/${to}" --storage-class ${storageClass2} --quiet`;
-  logger.system.info(`[s3mv] ${command}`);
+  logger.info(`[s3mv] ${command}`);
   const result = await execCommand(command);
-  logger.system.info(result);
+  logger.info(result);
 };
