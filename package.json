@@ -8,7 +8,7 @@
   "dependencies": {
     "axios": "^0.21.1",
     "config": "^3.3.6",
-    "encoding-japanese": "^1.0.30",
+    "encoding-japanese": "^2.0.0",
     "fs-extra": "^10.0.0",
     "glob": "^7.1.7",
     "log4js": "^6.3.0",
@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@types/config": "^0.0.39",
-    "@types/encoding-japanese": "^1.0.18",
+    "@types/encoding-japanese": "^2.0.0",
     "@types/fs-extra": "^9.0.12",
     "@types/glob": "^7.1.4",
     "@types/node": "^16.4.13",
