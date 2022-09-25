@@ -16,7 +16,7 @@
     "winser": "^1.0.3"
   },
   "devDependencies": {
-    "@types/config": "^0.0.39",
+    "@types/config": "^3.0.0",
     "@types/encoding-japanese": "^1.0.18",
     "@types/fs-extra": "^9.0.12",
     "@types/glob": "^7.1.4",
